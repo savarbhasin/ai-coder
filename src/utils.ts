@@ -1,6 +1,7 @@
 import { Command } from "@langchain/langgraph";
 import { K } from "./config";
 import { FaissStore } from "@langchain/community/vectorstores/faiss";
+import { PineconeStore } from "@langchain/pinecone";
 
 
 export const approveToolExecution = () => new Command(
@@ -20,7 +21,7 @@ export const rejectToolExecution = (feedback: string) => new Command(
     }
 );
 
-export async function searchCodebase(query: string, vectorStore: FaissStore, k: number = K) {
+export async function searchCodebase(query: string, vectorStore: PineconeStore, k: number = K) {
     const results = await vectorStore.similaritySearchWithScore(query, k);
     
     return results.map((result, index) => {

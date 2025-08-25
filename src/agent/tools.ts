@@ -2,7 +2,7 @@ import { z } from "zod";
 import { StructuredTool, tool } from "@langchain/core/tools";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { searchCodebase } from "../utils";
-import { incrementalVectorStore } from "../lib/vectorStore";
+import { incrementalVectorStore } from "../lib/vector-store";
 import { CODE_BASE_PATH, K } from "../config";
 import { readdir, readFile, writeFile } from "fs/promises";
 import { glob } from "glob";
@@ -365,15 +365,7 @@ const runTerminalCmdTool = tool(async (input) => {
     }),
 });
 
-const doneTaskTool = tool(async (input) => {
-    return `Task completed: ${input.summary}\n\nYou can now tell the user what all you did.`;
-}, {
-    name: "done_task",
-    description: "Once you believe the task is complete, ensure calling this tool to end the task.",
-    schema: z.object({
-        summary: z.string().describe("Memory of what you did to complete the task"),
-    }),
-});
+
 
 export const coderTools: StructuredTool[] = [
     searchCodebaseTool,
@@ -384,7 +376,6 @@ export const coderTools: StructuredTool[] = [
     globalFileSearchTool,
     listDirTool,
     runTerminalCmdTool,
-    doneTaskTool
 ];
 
 export const reviewerTools = [
@@ -394,7 +385,6 @@ export const reviewerTools = [
     globalFileSearchTool,
     listDirTool,
     runTerminalCmdTool,
-    doneTaskTool
 ];
 
 export const coderToolNode = new ToolNode(coderTools);

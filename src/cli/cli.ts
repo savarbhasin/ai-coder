@@ -12,10 +12,11 @@ export async function processUserInput(userInput: string, conversationId: string
 
     let toSend = inputs;
 
+    
     while (true) {
         try {
             const stream = await agent.stream(toSend, { 
-                configurable: { thread_id: conversationId, agent: "reviewer" }, 
+                configurable: { thread_id: conversationId, agent: "coder" }, 
                 streamMode: "updates"
             });
 

@@ -7,8 +7,12 @@ steps to run
 
 # Todo
 
-- [ ] fix vector store. watching.
+- [x] fix vector store
+
+- [ ] fix watching
 
 - [ ] check reviewer
 
 - [ ] memory
+
+- [ ] prompt

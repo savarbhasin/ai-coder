@@ -1,5 +1,6 @@
 node_modules
 .env
 dist
-faiss_index
 vscode-extension
+hi
+file_index.json

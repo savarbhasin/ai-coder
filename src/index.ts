@@ -4,8 +4,11 @@ import { color, ANSI } from "./cli/ui";
 import { MODEL } from "./config";
 import { promptUserInput, closePrompts } from "./cli/prompts";
 import { processUserInput } from "./cli/cli";
-import { incrementalVectorStore } from "./lib/vectorStore";
+import { incrementalVectorStore } from "./lib/vector-store";
+import dotenv from "dotenv";
 
+// load environment variables
+dotenv.config({quiet: true});
 
 async function main() {
     try {
@@ -20,6 +23,7 @@ async function main() {
         await incrementalVectorStore.initialize();
         
         let vectorStore = incrementalVectorStore.getVectorStore();
+        
         if (!vectorStore) {
             await incrementalVectorStore.rebuildIndex();
         }
@@ -28,8 +32,7 @@ async function main() {
         console.log("vector store ready\n");
 
         const conversationId = `session_${Date.now()}`;
-
-
+        
         try {
             while (true) {
                 const userInput = await promptUserInput();
@@ -44,7 +47,6 @@ async function main() {
         } catch (error) {
             console.error(renderError(error instanceof Error ? error : 'Unknown error'));
         } finally {
-            // Cleanup
             incrementalVectorStore.stopWatching();
             closePrompts();
         }

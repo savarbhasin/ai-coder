@@ -1,0 +1,70 @@
+{
+  "/Users/savarbhasin/Developer/traycer-ai/src/agent/agent.ts": {
+    "lastIndexed": 1756138679027,
+    "numberOfChunks": 2
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/agent/model.ts": {
+    "lastIndexed": 1756138680023,
+    "numberOfChunks": 1
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/agent/prompt.ts": {
+    "lastIndexed": 1756138682420,
+    "numberOfChunks": 7
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/agent/workflow.ts": {
+    "lastIndexed": 1756138685731,
+    "numberOfChunks": 1
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/cli/cli.ts": {
+    "lastIndexed": 1756138686747,
+    "numberOfChunks": 1
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/cli/prompts.ts": {
+    "lastIndexed": 1756138688095,
+    "numberOfChunks": 2
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/cli/toolRender.ts": {
+    "lastIndexed": 1756138689254,
+    "numberOfChunks": 2
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/cli/types.ts": {
+    "lastIndexed": 1756138690106,
+    "numberOfChunks": 1
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/cli/ui.ts": {
+    "lastIndexed": 1756138691289,
+    "numberOfChunks": 3
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/config.ts": {
+    "lastIndexed": 1756138692179,
+    "numberOfChunks": 1
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/index.ts": {
+    "lastIndexed": 1756138692982,
+    "numberOfChunks": 1
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/lib/splitter.ts": {
+    "lastIndexed": 1756138694033,
+    "numberOfChunks": 4
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/lib/vectorStore.ts": {
+    "lastIndexed": 1756138697516,
+    "numberOfChunks": 9
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/types.ts": {
+    "lastIndexed": 1756138698646,
+    "numberOfChunks": 1
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/agent/tools.ts": {
+    "lastIndexed": 1756138982062,
+    "numberOfChunks": 14
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/utils.ts": {
+    "lastIndexed": 1756138985324,
+    "numberOfChunks": 1
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/lib/vector-store.ts": {
+    "lastIndexed": 1756139908470,
+    "numberOfChunks": 9
+  }
+}
