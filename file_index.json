@@ -1,15 +1,7 @@
 {
-  "/Users/savarbhasin/Developer/traycer-ai/src/agent/agent.ts": {
-    "lastIndexed": 1756138679027,
-    "numberOfChunks": 2
-  },
   "/Users/savarbhasin/Developer/traycer-ai/src/agent/model.ts": {
     "lastIndexed": 1756138680023,
     "numberOfChunks": 1
-  },
-  "/Users/savarbhasin/Developer/traycer-ai/src/agent/prompt.ts": {
-    "lastIndexed": 1756138682420,
-    "numberOfChunks": 7
   },
   "/Users/savarbhasin/Developer/traycer-ai/src/agent/workflow.ts": {
     "lastIndexed": 1756138685731,
@@ -34,10 +26,6 @@
   "/Users/savarbhasin/Developer/traycer-ai/src/cli/ui.ts": {
     "lastIndexed": 1756138691289,
     "numberOfChunks": 3
-  },
-  "/Users/savarbhasin/Developer/traycer-ai/src/config.ts": {
-    "lastIndexed": 1756138692179,
-    "numberOfChunks": 1
   },
   "/Users/savarbhasin/Developer/traycer-ai/src/index.ts": {
     "lastIndexed": 1756138692982,
@@ -64,7 +52,19 @@
     "numberOfChunks": 1
   },
   "/Users/savarbhasin/Developer/traycer-ai/src/lib/vector-store.ts": {
-    "lastIndexed": 1756139908470,
+    "lastIndexed": 1756140214655,
     "numberOfChunks": 9
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/agent/prompt.ts": {
+    "lastIndexed": 1756200406428,
+    "numberOfChunks": 7
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/config.ts": {
+    "lastIndexed": 1756201244213,
+    "numberOfChunks": 1
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/agent/agent.ts": {
+    "lastIndexed": 1756202332700,
+    "numberOfChunks": 2
   }
 }

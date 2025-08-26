@@ -22,7 +22,7 @@ export class IncrementalVectorStore {
     private splitter: CodeSplitter;
     private fileIndex: FileIndex = {};
     private indexPath: string;
-    private watcher: FSWatcher | null = null;
+    // private watcher: FSWatcher | null = null;
     private readonly codeBasePath: string;
     private pineconeIndex: Index; // Pinecone index instance
 
@@ -153,7 +153,6 @@ export class IncrementalVectorStore {
         try {
             const content = await fs.readFile(absolutePath, "utf-8");
 
-            // Enforce TypeScript-only processing if that's desired:
             if (!(absolutePath.endsWith('.ts') || absolutePath.endsWith('.tsx'))) {
                 console.log(`skipping non-typescript file ${absolutePath}`);
                 return [];
@@ -174,7 +173,6 @@ export class IncrementalVectorStore {
                         filePath: absolutePath,
                         startLine: lines,
                         endLine: endLines,
-                        type: this.getChunkType(chunk),
                         length: chunk.length
                     },
                     id: `${absolutePath}-${index}`
@@ -188,19 +186,7 @@ export class IncrementalVectorStore {
         }
     }
 
-    private getChunkType(chunk: string): string {
-        // clarify precedence: treat arrow functions properly
-        if (chunk.includes('function ') || (chunk.includes('const ') && chunk.includes('=>'))) {
-            return 'function';
-        } else if (chunk.includes('class ')) {
-            return 'class';
-        } else if (chunk.includes('interface ') || chunk.includes('type ')) {
-            return 'type';
-        } else if (chunk.includes('import ') || chunk.includes('export ')) {
-            return 'import_export';
-        }
-        return 'other';
-    }
+    
 
     // Update file: accepts either absolute or relative path, converts to absolute internal key
     async updateFile(filePath: string): Promise<void> {
@@ -278,60 +264,60 @@ export class IncrementalVectorStore {
         await this.removeFileFromIndexAndVectorStore(absolutePath);
     }
 
-    startWatching(sourceDir: string = CODE_BASE_PATH): void {
-        if (this.watcher) {
-            this.watcher.close();
-        }
+    // startWatching(sourceDir: string = CODE_BASE_PATH): void {
+    //     if (this.watcher) {
+    //         this.watcher.close();
+    //     }
 
-        const absoluteSourceDir = path.resolve(sourceDir);
-        const watchPattern = path.join(absoluteSourceDir, '**/*.{ts,tsx}');
+    //     const absoluteSourceDir = path.resolve(sourceDir);
+    //     const watchPattern = path.join(absoluteSourceDir, '**/*.{ts,tsx}');
         
         
-        this.watcher = chokidar.watch(watchPattern, {
-            ignored: [
-                '**/node_modules/**',
-                '**/.git/**',
-                '**/dist/**',
-                '**/build/**',
-                '**/file_index.json',
-                '**/faiss_index/**'
-            ],
-            persistent: true,
-            ignoreInitial: true,
-            followSymlinks: false,
-            awaitWriteFinish: {
-                stabilityThreshold: 50,  // Reduced from 200ms
-                pollInterval: 50         
-            },
-            usePolling: false,           // Use native file system events
-            interval: 100                 // Polling interval if needed
-        });
+    //     this.watcher = chokidar.watch(watchPattern, {
+    //         ignored: [
+    //             '**/node_modules/**',
+    //             '**/.git/**',
+    //             '**/dist/**',
+    //             '**/build/**',
+    //             '**/file_index.json',
+    //             '**/faiss_index/**'
+    //         ],
+    //         persistent: true,
+    //         ignoreInitial: true,
+    //         followSymlinks: false,
+    //         awaitWriteFinish: {
+    //             stabilityThreshold: 50,  // Reduced from 200ms
+    //             pollInterval: 50         
+    //         },
+    //         usePolling: false,           // Use native file system events
+    //         interval: 100                 // Polling interval if needed
+    //     });
 
-        this.watcher
-            .on('change', (filePath: string) => {
-                const absolutePath = this.toAbsoluteNormalized(filePath);
-                this.updateFile(absolutePath).catch(err => console.error('❌ updateFile failed', err));
-            })
-            .on('add', (filePath: string) => {
-                const absolutePath = this.toAbsoluteNormalized(filePath);
-                this.updateFile(absolutePath).catch(err => console.error('❌ addFile failed', err));
-            })
-            .on('unlink', (filePath: string) => {
-                const absolutePath = this.toAbsoluteNormalized(filePath);
-                this.removeFileFromIndexAndVectorStore(absolutePath).catch(err => console.error('❌ removeFile failed', err));
-            })
-            .on('error', (error: unknown) => {
-                console.error(`watcher error:`, error);
-            });
-    }
+    //     this.watcher
+    //         .on('change', (filePath: string) => {
+    //             const absolutePath = this.toAbsoluteNormalized(filePath);
+    //             this.updateFile(absolutePath).catch(err => console.error('❌ updateFile failed', err));
+    //         })
+    //         .on('add', (filePath: string) => {
+    //             const absolutePath = this.toAbsoluteNormalized(filePath);
+    //             this.updateFile(absolutePath).catch(err => console.error('❌ addFile failed', err));
+    //         })
+    //         .on('unlink', (filePath: string) => {
+    //             const absolutePath = this.toAbsoluteNormalized(filePath);
+    //             this.removeFileFromIndexAndVectorStore(absolutePath).catch(err => console.error('❌ removeFile failed', err));
+    //         })
+    //         .on('error', (error: unknown) => {
+    //             console.error(`watcher error:`, error);
+    //         });
+    // }
 
-    stopWatching(): void {
-        if (this.watcher) {
-            this.watcher.close();
-            this.watcher = null;
-            console.log("stopped watching files");
-        }
-    }
+    // stopWatching(): void {
+    //     if (this.watcher) {
+    //         this.watcher.close();
+    //         this.watcher = null;
+    //         console.log("stopped watching files");
+    //     }
+    // }
 
     getVectorStore(): PineconeStore | null {
         return this.vectorStore;

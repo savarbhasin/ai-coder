@@ -7,7 +7,7 @@ import { HumanResponse } from '@langchain/langgraph/prebuilt';
 import { AIMessage, HumanMessage } from '@langchain/core/messages';
 
 
-export async function processUserInput(userInput: string, conversationId: string): Promise<void> {
+export async function processUserInput(userInput: string, conversationId: string, agentType: "coder" | "reviewer"): Promise<void> {
     const inputs = { messages: [new HumanMessage(userInput)] };
 
     let toSend = inputs;
@@ -16,7 +16,7 @@ export async function processUserInput(userInput: string, conversationId: string
     while (true) {
         try {
             const stream = await agent.stream(toSend, { 
-                configurable: { thread_id: conversationId, agent: "coder" }, 
+                configurable: { thread_id: conversationId, agent: agentType }, 
                 streamMode: "updates"
             });
 

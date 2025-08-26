@@ -7,7 +7,8 @@ import { ToolMessage } from "@langchain/core/messages";
 import { coderTools, reviewerTools } from "./tools";
 import { CODER_SYSTEM_PROMPT, REVIEWER_SYSTEM_PROMPT } from "./prompt";
 import { RunnableConfig } from "@langchain/core/runnables";
-import { DynamicStructuredTool } from "@langchain/core/tools";
+import { DynamicStructuredTool, Tool } from "@langchain/core/tools";
+import { stat } from "fs";
 
 type RouteDestination = typeof END | "human_review_node" | "run_tool";
 
@@ -146,11 +147,15 @@ export const callLLM = async (
         throw new Error("agent type is required");
     }
 
+    const strippedMessages = state.messages
+        .filter((message) => !(message instanceof ToolMessage) || message.name === "diff_tool")
+        .slice(-20);
+
     const systemPrompt = agentType === 'coder' ? CODER_SYSTEM_PROMPT : REVIEWER_SYSTEM_PROMPT;
     
     const messages = [
         new SystemMessage(systemPrompt),
-        ...state.messages
+        ...strippedMessages
     ];
     
     const tools = agentType === 'coder' ? coderTools : reviewerTools;

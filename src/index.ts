@@ -5,10 +5,7 @@ import { MODEL } from "./config";
 import { promptUserInput, closePrompts } from "./cli/prompts";
 import { processUserInput } from "./cli/cli";
 import { incrementalVectorStore } from "./lib/vector-store";
-import dotenv from "dotenv";
 
-// load environment variables
-dotenv.config({quiet: true});
 
 async function main() {
     try {
@@ -28,7 +25,9 @@ async function main() {
             await incrementalVectorStore.rebuildIndex();
         }
         
-        incrementalVectorStore.startWatching();
+        // watching is not working as expected
+        // incrementalVectorStore.startWatching();
+
         console.log("vector store ready\n");
 
         const conversationId = `session_${Date.now()}`;
@@ -42,12 +41,12 @@ async function main() {
                     break;
                 }
 
-                await processUserInput(userInput, conversationId);
+                await processUserInput(userInput, conversationId, "coder");
             }
         } catch (error) {
             console.error(renderError(error instanceof Error ? error : 'Unknown error'));
         } finally {
-            incrementalVectorStore.stopWatching();
+            // incrementalVectorStore.stopWatching();
             closePrompts();
         }
     } catch (error) {
