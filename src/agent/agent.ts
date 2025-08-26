@@ -5,10 +5,9 @@ import { HUMAN_APPROVAL_TOOLS } from "../config";
 import { getModel } from "./model";
 import { ToolMessage } from "@langchain/core/messages";
 import { coderTools, reviewerTools } from "./tools";
-import { CODER_SYSTEM_PROMPT, REVIEWER_SYSTEM_PROMPT } from "./prompt";
+import { CODER_SYSTEM_PROMPT, CREATE_PHASE_PROMPT, PLANNER_AGENT_PROMPT, REVIEWER_SYSTEM_PROMPT } from "./prompt";
 import { RunnableConfig } from "@langchain/core/runnables";
 import { DynamicStructuredTool, Tool } from "@langchain/core/tools";
-import { stat } from "fs";
 
 type RouteDestination = typeof END | "human_review_node" | "run_tool";
 
@@ -89,11 +88,9 @@ export const runTool = async (
     let toolsMap: Record<string, DynamicStructuredTool>;
     if (config.configurable?.agent === "coder") {
         toolsMap = Object.fromEntries(coderTools.map(tool => [tool.name, tool as DynamicStructuredTool]));
-    } else if (config.configurable?.agent === "reviewer") {
-        toolsMap = Object.fromEntries(reviewerTools.map(tool => [tool.name, tool as DynamicStructuredTool]));
     } else {
-        throw new Error("Invalid agent");
-    }
+        toolsMap = Object.fromEntries(reviewerTools.map(tool => [tool.name, tool as DynamicStructuredTool]));
+    } 
 
     const lastMessage = state.messages[state.messages.length - 1] as AIMessage;
     const toolCalls = lastMessage.tool_calls;
@@ -150,8 +147,19 @@ export const callLLM = async (
     const strippedMessages = state.messages
         .filter((message) => !(message instanceof ToolMessage) || message.name === "diff_tool")
         .slice(-20);
-
-    const systemPrompt = agentType === 'coder' ? CODER_SYSTEM_PROMPT : REVIEWER_SYSTEM_PROMPT;
+    
+    let systemPrompt: string;
+    if (agentType === "coder") {
+        systemPrompt = CODER_SYSTEM_PROMPT;
+    } else if (agentType === "reviewer") {
+        systemPrompt = REVIEWER_SYSTEM_PROMPT;
+    } else if (agentType === "planner") {
+        systemPrompt = PLANNER_AGENT_PROMPT;
+    } else if (agentType === "creator") {
+        systemPrompt = CREATE_PHASE_PROMPT;
+    } else {
+        throw new Error("Invalid agent type");
+    }
     
     const messages = [
         new SystemMessage(systemPrompt),

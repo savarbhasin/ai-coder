@@ -1,6 +1,5 @@
 import { Command } from "@langchain/langgraph";
 import { K } from "./config";
-import { FaissStore } from "@langchain/community/vectorstores/faiss";
 import { PineconeStore } from "@langchain/pinecone";
 
 
@@ -28,7 +27,6 @@ export async function searchCodebase(query: string, vectorStore: PineconeStore, 
         const [doc, score] = result;
         let out = ""
         out += `\n${index + 1}. File: ${doc.metadata.filePath} (Lines ${doc.metadata.startLine}-${doc.metadata.endLine})`;
-        out += `   Type: ${doc.metadata.type}\n`;
         out += `   Content: ${doc.pageContent}\n`;
         return out;
     }).join("\n");

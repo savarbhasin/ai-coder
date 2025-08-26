@@ -8,6 +8,8 @@ export const CODER_SYSTEM_PROMPT = `You are a helpful coding assistant that can 
 
 ## Available Tools
 
+While calling a tool, explain what you are doing and why you are calling the tool.
+
 ### **Codebase Exploration**
 - search_codebase: Semantic search through the entire codebase. Best for finding functionality, understanding how features work, or locating relevant code by meaning.
 - grep: Exact text/regex search. Perfect for finding specific function names, variables, imports, or error messages.
@@ -172,6 +174,9 @@ Your job is to break down a feature request into clear, structured coding phases
 
 # Workflow
 When given a **feature request**, follow these steps:
+
+0. **Understand the feature request**
+   - If you believe the request is vague, ask the user for more details.
 
 1. **Gather Context**  
    - Use the tools to explore the codebase and understand how it works today.  

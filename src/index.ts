@@ -1,21 +1,31 @@
 import { renderError } from "./cli/toolRender";
-import { setupGracefulShutdown } from "./cli/prompts";
+import { askQuestion, setupGracefulShutdown } from "./cli/prompts";
 import { color, ANSI } from "./cli/ui";
 import { MODEL } from "./config";
 import { promptUserInput, closePrompts } from "./cli/prompts";
 import { processUserInput } from "./cli/cli";
 import { incrementalVectorStore } from "./lib/vector-store";
+import { AgentType } from "./types";
 
 
 async function main() {
     try {
         setupGracefulShutdown();
-
+        // ask for which agent to use
+        const agentType = await askQuestion("Which agent do you want to use? (coder, reviewer, planner, creator): ");
+        
+        if (!(agentType as AgentType)) {
+            console.error("Invalid agent type");
+            return;
+        }
+        
         const welcomeTitle = color("traycer ai", ANSI.cyan);
         const modelInfo = `${color("model:", ANSI.dim)} ${color(MODEL, ANSI.green)}`;
+        const agentInfo = `${color("agent:", ANSI.dim)} ${color(agentType, ANSI.blue)}`;
         
         console.log(`\n${welcomeTitle}`);
         console.log(`${modelInfo}`);
+        console.log(`${agentInfo}`);
         
         await incrementalVectorStore.initialize();
         
@@ -25,7 +35,7 @@ async function main() {
             await incrementalVectorStore.rebuildIndex();
         }
         
-        // watching is not working as expected
+        // watching is not working 
         // incrementalVectorStore.startWatching();
 
         console.log("vector store ready\n");
@@ -41,7 +51,7 @@ async function main() {
                     break;
                 }
 
-                await processUserInput(userInput, conversationId, "coder");
+                await processUserInput(userInput, conversationId, agentType as AgentType);
             }
         } catch (error) {
             console.error(renderError(error instanceof Error ? error : 'Unknown error'));

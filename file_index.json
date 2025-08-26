@@ -3,14 +3,6 @@
     "lastIndexed": 1756138680023,
     "numberOfChunks": 1
   },
-  "/Users/savarbhasin/Developer/traycer-ai/src/agent/workflow.ts": {
-    "lastIndexed": 1756138685731,
-    "numberOfChunks": 1
-  },
-  "/Users/savarbhasin/Developer/traycer-ai/src/cli/cli.ts": {
-    "lastIndexed": 1756138686747,
-    "numberOfChunks": 1
-  },
   "/Users/savarbhasin/Developer/traycer-ai/src/cli/prompts.ts": {
     "lastIndexed": 1756138688095,
     "numberOfChunks": 2
@@ -27,10 +19,6 @@
     "lastIndexed": 1756138691289,
     "numberOfChunks": 3
   },
-  "/Users/savarbhasin/Developer/traycer-ai/src/index.ts": {
-    "lastIndexed": 1756138692982,
-    "numberOfChunks": 1
-  },
   "/Users/savarbhasin/Developer/traycer-ai/src/lib/splitter.ts": {
     "lastIndexed": 1756138694033,
     "numberOfChunks": 4
@@ -39,32 +27,44 @@
     "lastIndexed": 1756138697516,
     "numberOfChunks": 9
   },
-  "/Users/savarbhasin/Developer/traycer-ai/src/types.ts": {
-    "lastIndexed": 1756138698646,
+  "/Users/savarbhasin/Developer/traycer-ai/src/lib/vector-store.ts": {
+    "lastIndexed": 1756204225955,
+    "numberOfChunks": 8
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/utils.ts": {
+    "lastIndexed": 1756204227050,
     "numberOfChunks": 1
   },
   "/Users/savarbhasin/Developer/traycer-ai/src/agent/tools.ts": {
-    "lastIndexed": 1756138982062,
-    "numberOfChunks": 14
-  },
-  "/Users/savarbhasin/Developer/traycer-ai/src/utils.ts": {
-    "lastIndexed": 1756138985324,
-    "numberOfChunks": 1
-  },
-  "/Users/savarbhasin/Developer/traycer-ai/src/lib/vector-store.ts": {
-    "lastIndexed": 1756140214655,
+    "lastIndexed": 1756205175826,
     "numberOfChunks": 9
   },
-  "/Users/savarbhasin/Developer/traycer-ai/src/agent/prompt.ts": {
-    "lastIndexed": 1756200406428,
-    "numberOfChunks": 7
-  },
-  "/Users/savarbhasin/Developer/traycer-ai/src/config.ts": {
-    "lastIndexed": 1756201244213,
+  "/Users/savarbhasin/Developer/traycer-ai/src/agent/workflow.ts": {
+    "lastIndexed": 1756205177144,
     "numberOfChunks": 1
   },
+  "/Users/savarbhasin/Developer/traycer-ai/src/config.ts": {
+    "lastIndexed": 1756205178853,
+    "numberOfChunks": 1
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/cli/cli.ts": {
+    "lastIndexed": 1756205426329,
+    "numberOfChunks": 1
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/index.ts": {
+    "lastIndexed": 1756205428537,
+    "numberOfChunks": 1
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/types.ts": {
+    "lastIndexed": 1756205429727,
+    "numberOfChunks": 1
+  },
+  "/Users/savarbhasin/Developer/traycer-ai/src/agent/prompt.ts": {
+    "lastIndexed": 1756205585312,
+    "numberOfChunks": 13
+  },
   "/Users/savarbhasin/Developer/traycer-ai/src/agent/agent.ts": {
-    "lastIndexed": 1756202332700,
+    "lastIndexed": 1756205663132,
     "numberOfChunks": 2
   }
 }

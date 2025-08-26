@@ -12,3 +12,5 @@ export interface FileIndex {
         numberOfChunks: number; // number of code chunks in the file
     };
 }
+
+export type AgentType = "coder" | "reviewer" | "planner" | "creator";

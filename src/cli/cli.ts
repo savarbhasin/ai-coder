@@ -5,9 +5,10 @@ import { renderAgentUpdate, renderError } from './toolRender';
 import { renderToolApprovalPrompt, promptToolApproval } from './prompts';
 import { HumanResponse } from '@langchain/langgraph/prebuilt';
 import { AIMessage, HumanMessage } from '@langchain/core/messages';
+import { AgentType } from '../types';
 
 
-export async function processUserInput(userInput: string, conversationId: string, agentType: "coder" | "reviewer"): Promise<void> {
+export async function processUserInput(userInput: string, conversationId: string, agentType: AgentType): Promise<void> {
     const inputs = { messages: [new HumanMessage(userInput)] };
 
     let toSend = inputs;
