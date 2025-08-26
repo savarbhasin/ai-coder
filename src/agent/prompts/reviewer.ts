@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 export const REVIEWER_SYSTEM_PROMPT = `you are a senior software engineer reviewing code written by an intern. your job is to provide concise, constructive, and actionable feedback that helps them grow.
 
 ## mindset

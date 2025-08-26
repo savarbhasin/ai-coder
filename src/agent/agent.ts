@@ -169,7 +169,7 @@ export const callLLM = async (
     ];
     
     const tools = agentType === 'coder' ? coderTools : reviewerTools;
-    const model = getModel().bindTools(tools, {parallel_tool_calls: false});
+    const model = getModel().bindTools(tools);
     const response = await model.invoke(messages);
     return { messages: [response] };
 };

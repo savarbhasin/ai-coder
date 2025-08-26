@@ -166,17 +166,18 @@ export class IncrementalVectorStore {
                 const startIndexOfChunk = content.indexOf(chunk);
                 const lines = content.substring(0, startIndexOfChunk).split('\n').length;
                 const endLines = lines + chunk.split('\n').length - 1;
-
-                documents.push(new Document({
-                    pageContent: chunk,
-                    metadata: {
-                        filePath: absolutePath,
-                        startLine: lines,
-                        endLine: endLines,
-                        length: chunk.length
-                    },
-                    id: `${absolutePath}-${index}`
-                }));
+                if (chunk.length > 5){
+                    documents.push(new Document({
+                        pageContent: chunk,
+                        metadata: {
+                            filePath: absolutePath,
+                            startLine: lines,
+                            endLine: endLines,
+                            length: chunk.length
+                        },
+                        id: `${absolutePath}-${index}`
+                    }));
+            }
             });
 
             return documents;

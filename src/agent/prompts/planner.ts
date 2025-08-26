@@ -42,6 +42,7 @@ Include comments explaining that this is for future Auth0 integration and should
 This file will serve as the foundation for Auth0 integration without affecting the current \`lib/auth/session.ts\` and \`lib/auth/middleware.ts\` files.  
 
 ---
+- The above output only has a single file, you should output a list of files (if needed) with the explanation of each file like this.
 
 # Final Instruction
 For each feature phase, output the plan as a **list of files**, where each file is described in this structured format:  
