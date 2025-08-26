@@ -17,13 +17,30 @@ const searchCodebaseTool = tool(async (input) => {
     if (!vectorStore) {
         return "Vector store not initialized. Please wait for indexing to complete.";
     }
-    const results = await searchCodebase(input.query, vectorStore, K);
-    return results;
+    try {
+        const results = await searchCodebase(input.query, vectorStore, K);
+        if (!results || results.trim() === '') {
+            return `No results found for query: "${input.query}"`;
+        }
+        
+        return `Search results for "${input.query}":\n\n${results}`;
+    } catch (error) {
+        return `Search failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    }
 }, {
     name: "search_codebase",
-    description: "Search the codebase for a function",
+    description: `Perform semantic vector search on the codebase to find relevant code snippets and files. 
+    
+    Use this tool when you need to:
+    - Find code related to specific functionality (e.g., "authentication handling", "user login", "database queries")
+    - Locate files that implement certain features or patterns
+    - Discover similar code across the codebase
+    - Search for code by natural language description rather than exact text
+    
+    This is different from grep - it finds semantically similar code, not exact text matches.
+    Examples: "authentication handle", "JWT token validation", "React component props", "error handling middleware"`,
     schema: z.object({
-        query: z.string().describe("The query to search the codebase for"),
+        query: z.string().describe("Natural language description of what you're looking for in the codebase"),
     }),
 });
 
@@ -35,7 +52,7 @@ const grepTool = tool(async (input) => {
         try {
             await stat(targetPath);
         } catch {
-            return `Error: Path does not exist: ${targetPath}`;
+            return `Path does not exist: ${targetPath}`;
         }
 
         // Escape special characters in the pattern for shell safety
@@ -86,46 +103,44 @@ const grepTool = tool(async (input) => {
             const secondColonIndex = line.indexOf(':', colonIndex + 1);
             
             if (colonIndex === -1 || secondColonIndex === -1) {
-                return {
-                    file: 'unknown',
-                    line: 0,
-                    content: line
-                };
+                return line;
             }
             
             const filePath = line.substring(0, colonIndex);
             const lineNumber = line.substring(colonIndex + 1, secondColonIndex);
             const content = line.substring(secondColonIndex + 1);
             
-            return {
-                file: path.relative(CODE_BASE_PATH, filePath),
-                line: parseInt(lineNumber) || 0,
-                content: content.trim()
-            };
+            const relativePath = path.relative(CODE_BASE_PATH, filePath);
+            return `${relativePath}:${lineNumber}: ${content.trim()}`;
         });
         
         // Limit results to prevent overwhelming output
         const maxResults = 50;
         if (results.length > maxResults) {
-            return {
-                matches: results.slice(0, maxResults),
-                truncated: true,
-                totalMatches: results.length,
-                message: `Showing first ${maxResults} of ${results.length} matches`
-            };
+            return `Found ${results.length} matches for "${input.pattern}". Showing first ${maxResults}:\n\n${results.slice(0, maxResults).join('\n')}\n\n... and ${results.length - maxResults} more matches`;
         }
         
-        return results;
+        return `Found ${results.length} matches for "${input.pattern}":\n\n${results.join('\n')}`;
     } catch (error) {
         return `Error executing grep: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
 }, {
     name: "grep",
-    description: "Search for text patterns in files. Supports regex patterns and case-insensitive search.",
+    description: `Search for exact text patterns in files using regular expressions.
+    
+    Use this tool when you need to:
+    - Find exact string matches in code files
+    - Search for specific variable names, function names, or class names
+    - Locate import statements or specific syntax patterns
+    - Find configuration values or environment variables
+    - Search for TODO comments, error messages, or specific text
+    
+    Supports regex patterns and case-insensitive search. This finds exact text matches, unlike the semantic search.
+    Examples: "import.*React", "function.*handleLogin", "TODO", "process.env", "className.*button"`,
     schema: z.object({
-        pattern: z.string().describe("The text or regex pattern to search for"),
-        path: z.string().describe("Optional specific path to search in (defaults to codebase root)").optional(),
-        ignoreCase: z.boolean().describe("Whether to ignore case (default: false)").optional(),
+        pattern: z.string().describe("The exact text or regex pattern to search for in files"),
+        path: z.string().describe("Optional specific directory path to search in (defaults to codebase root)").optional(),
+        ignoreCase: z.boolean().describe("Whether to ignore case when matching (default: false)").optional(),
     }),
 });
 
@@ -136,10 +151,11 @@ const readFileTool = tool(async (input) => {
         // Security check: ensure file is within codebase
         const relativePath = path.relative(CODE_BASE_PATH, filePath);
         if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
-            return `Error: Access denied. File must be within codebase directory.`;
+            return "Access denied. File must be within codebase directory.";
         }
         
         let content = await readFile(filePath, "utf8");
+        const originalLength = content.split('\n').length;
         
         if (input.startLine || input.endLine) {
             const lines = content.split('\n');
@@ -154,19 +170,31 @@ const readFileTool = tool(async (input) => {
                 return `${lineNum.toString().padStart(4, ' ')}| ${line}`;
             });
             content = numberedLines.join('\n');
+            
+            return `File: ${input.filePath} (lines ${start + 1}-${end} of ${originalLength})\n\n${content}`;
         }
         
-        return content;
+        return `File: ${input.filePath} (${originalLength} lines)\n\n${content}`;
     } catch (error) {
         return `Error reading file: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
 }, {
     name: "read_file",
-    description: "Read a file from the codebase",
+    description: `Read the contents of a specific file from the codebase.
+    
+    Use this tool when you need to:
+    - Examine the full content of a specific file
+    - Read configuration files, package.json, or documentation
+    - View source code to understand implementation details
+    - Read specific line ranges from large files
+    - Analyze file structure and dependencies
+    
+    Supports reading partial content by specifying line ranges to avoid overwhelming output with large files.
+    Always use this before modifying files to understand the current state.`,
     schema: z.object({
-        filePath: z.string().describe("The path to the file to read"),
-        startLine: z.number().describe("Line number to start reading from (1-based)").optional(),
-        endLine: z.number().describe("Line number to stop reading at (1-based)").optional(),
+        filePath: z.string().describe("The relative path to the file you want to read (e.g., 'src/components/App.tsx')"),
+        startLine: z.number().describe("Optional: Line number to start reading from (1-based indexing)").optional(),
+        endLine: z.number().describe("Optional: Line number to stop reading at (1-based indexing)").optional(),
     }),
 });
 
@@ -177,28 +205,40 @@ const writeFileTool = tool(async (input) => {
         // Security check: ensure file is within codebase
         const relativePath = path.relative(CODE_BASE_PATH, filePath);
         if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
-            return `Error: Access denied. File must be within codebase directory.`;
+            return "Access denied. File must be within codebase directory.";
         }
         
         // Ensure directory exists
         const dir = path.dirname(filePath);
         await execAsync(`mkdir -p "${dir}"`);
         
+        const contentLength = input.content.length;
+        const lineCount = input.content.split('\n').length;
+        
         await writeFile(filePath, input.content, "utf8");
-        return `File written successfully: ${input.filePath}`;
+        
+        return `File written successfully: ${input.filePath}\nContent: ${contentLength} characters, ${lineCount} lines`;
     } catch (error) {
         return `Error writing file: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
 }, {
     name: "write_file",
-    description: "Write a file to the codebase",
+    description: `Create a new file or completely replace an existing file with new content.
+    
+    Use this tool when you need to:
+    - Create brand new files (components, utilities, configuration files)
+    - Completely rewrite a file with new content
+    - Generate boilerplate code or starter templates
+    - Create documentation, README files, or configuration files
+    
+    Warning: This will overwrite existing files completely. Use diff_edit_file for making targeted changes to existing files.
+    Always read the existing file first if you want to preserve any existing content.`,
     schema: z.object({
-        filePath: z.string().describe("The path to the file to write"),
-        content: z.string().describe("The content to write to the file"),
+        filePath: z.string().describe("The relative path where you want to create/write the file (e.g., 'src/components/NewComponent.tsx')"),
+        content: z.string().describe("The complete content to write to the file"),
     }),
 });
 
-// Improved diff patch application with better error handling and validation
 function applyDiffPatch(originalContent: string, diffPatch: string): { success: boolean; content?: string; error?: string } {
     try {
         const originalLines: string[] = originalContent.split(/\r?\n/);
@@ -360,7 +400,7 @@ const diffEditTool = tool(async (input) => {
         // Security check
         const relativePath = path.relative(CODE_BASE_PATH, filePath);
         if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
-            return `Error: Access denied. File must be within codebase directory.`;
+            return "Access denied. File must be within codebase directory.";
         }
         
         let originalContent;
@@ -382,24 +422,39 @@ const diffEditTool = tool(async (input) => {
         const newLines = result.content!.split(/\r?\n/).length;
         const linesChanged = Math.abs(newLines - originalLines);
 
-        return `✅ File edited successfully: ${input.path}\n\nSummary: ${linesChanged} lines ${newLines > originalLines ? 'added' : newLines < originalLines ? 'removed' : 'changed'}`;
+        return `File edited successfully: ${input.path}\n${linesChanged} lines ${newLines > originalLines ? 'added' : newLines < originalLines ? 'removed' : 'changed'}`;
     } catch (error) {
         return `Error editing file with diff: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
 }, {
     name: "diff_edit_file",
-    description: `Edit a file using unified diff format. The diff should contain hunk headers (@@ -start,count +start,count @@) followed by lines prefixed with +/- for additions/deletions and space for context.
+    description: `Apply targeted edits to existing files using unified diff format. This is the preferred method for making precise changes to files.
 
-Example:
-@@ -1,3 +1,4 @@
- # My Project
-+This is a new line
- ## Overview
--Old content
-+New content`,
+    Use this tool when you need to:
+    - Make specific changes to existing code (add/remove/modify lines)
+    - Add new functions or imports to existing files
+    - Fix bugs or update specific parts of a file
+    - Apply code refactoring changes
+    - Add or modify specific configuration options
+
+    The diff format uses:
+    - Lines starting with '+' are added
+    - Lines starting with '-' are removed  
+    - Lines starting with ' ' (space) are context lines that stay unchanged
+    - @@ headers show line number ranges
+
+    Example diff:
+    @@ -1,3 +1,4 @@
+     # My Project
+    +This is a new line
+     ## Overview
+    -Old content
+    +New content
+
+    This is safer than write_file as it makes targeted changes rather than replacing entire files.`,
     schema: z.object({
-        path: z.string().describe("The path to the file to edit"),
-        diff: z.string().describe("The unified diff patch to apply"),
+        path: z.string().describe("The relative path to the file you want to edit (e.g., 'src/components/App.tsx')"),
+        diff: z.string().describe("The unified diff patch to apply - must include @@ hunk headers and +/- prefixed lines"),
     }),
 });
 
@@ -408,7 +463,7 @@ const globalFileSearchTool = tool(async (input) => {
         // Normalize the pattern and ensure it's safe
         const pattern = input.pattern.trim();
         if (!pattern) {
-            return "Error: Empty search pattern provided";
+            return "Empty search pattern provided";
         }
 
         const options = {
@@ -444,15 +499,11 @@ const globalFileSearchTool = tool(async (input) => {
             for (const alt of alternatives) {
                 const altFiles = await glob(alt, options);
                 if (altFiles.length > 0) {
-                    return {
-                        pattern: alt,
-                        matches: altFiles.slice(0, 100).map(file => ({
-                            path: file,
-                            type: file.includes('.') ? 'file' : 'directory'
-                        })),
-                        total: altFiles.length,
-                        message: altFiles.length > 100 ? `Found ${altFiles.length} matches, showing first 100` : `Found ${altFiles.length} matches`
-                    };
+                    const results = altFiles.slice(0, 100).map(file => 
+                        `${file.includes('.') ? '📄' : '📁'} ${file}`
+                    );
+                    const message = altFiles.length > 100 ? `Found ${altFiles.length} matches, showing first 100` : `Found ${altFiles.length} matches`;
+                    return `${message} using pattern "${alt}":\n\n${results.join('\n')}`;
                 }
             }
             
@@ -473,29 +524,40 @@ const globalFileSearchTool = tool(async (input) => {
 
         // Limit results to prevent overwhelming output
         const maxResults = 100;
-        const results = sortedFiles.slice(0, maxResults).map(file => ({
-            path: file,
-            type: file.includes('.') ? 'file' : 'directory'
-        }));
+        const results = sortedFiles.slice(0, maxResults).map(file => 
+            `${file.includes('.') ? '📄' : '📁'} ${file}`
+        );
 
         if (files.length > maxResults) {
-            return {
-                matches: results,
-                total: files.length,
-                truncated: true,
-                message: `Found ${files.length} matches, showing first ${maxResults}`
-            };
+            return `Found ${files.length} matches for "${pattern}". Showing first ${maxResults}:\n\n${results.join('\n')}\n\n... and ${files.length - maxResults} more matches`;
         }
 
-        return results;
+        return `Found ${files.length} matches for "${pattern}":\n\n${results.join('\n')}`;
     } catch (error) {
         return `Error searching for files: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
 }, {
     name: "global_file_search",
-    description: "Search for files using glob patterns. Supports wildcards: * (any chars), ** (any dirs), ? (single char). Examples: '*.ts', '**/components/**', 'App.*', '**/*test*'",
+    description: `Search for files and directories using glob patterns with wildcards.
+    
+    Use this tool when you need to:
+    - Find files by name or extension (e.g., all TypeScript files, config files)
+    - Locate directories with specific names
+    - Search for files matching naming patterns
+    - Find all files of a certain type across the entire codebase
+    - Discover the project structure and file organization
+    
+    Glob pattern examples:
+    - '*.ts' - All TypeScript files in root
+    - '**/*.test.js' - All test files anywhere in the project
+    - '**/components/**' - All files in any components directory
+    - 'App.*' - Files named App with any extension
+    - '**/*config*' - Any file with 'config' in the name
+    - '*.json' - All JSON files in root directory
+    
+    This helps you understand the project structure and locate files before reading or editing them.`,
     schema: z.object({
-        pattern: z.string().describe("The glob pattern to search for files"),
+        pattern: z.string().describe("The glob pattern to search for files/directories. Use * for any chars, ** for any dirs, ? for single char"),
     }),
 });
 
@@ -503,10 +565,9 @@ const listDirTool = tool(async (input) => {
     try {
         const targetPath = input.path ? path.resolve(CODE_BASE_PATH, input.path) : CODE_BASE_PATH;
         
-        // Security check
         const relativePath = path.relative(CODE_BASE_PATH, targetPath);
         if (relativePath.startsWith('..') && input.path) {
-            return `Error: Access denied. Path must be within codebase directory.`;
+            return "Access denied. Path must be within codebase directory.";
         }
         
         const entries = await readdir(targetPath, { withFileTypes: true });
@@ -521,46 +582,54 @@ const listDirTool = tool(async (input) => {
             .map(async entry => {
                 const fullPath = path.join(targetPath, entry.name);
                 const stats = await stat(fullPath);
-                return {
-                    name: entry.name,
-                    type: entry.isDirectory() ? 'directory' : 'file',
-                    size: entry.isFile() ? stats.size : null,
-                    modified: stats.mtime.toISOString().split('T')[0], // Just date part
-                    path: path.relative(CODE_BASE_PATH, fullPath)
-                };
+                const icon = entry.isDirectory() ? '📁' : '📄';
+                const size = entry.isFile() ? ` (${stats.size} bytes)` : '';
+                return `${icon} ${entry.name}${size}`;
             });
 
         const items = await Promise.all(formatted);
         
         // Sort: directories first, then files, both alphabetically
-        items.sort((a, b) => {
-            if (a.type !== b.type) {
-                return a.type === 'directory' ? -1 : 1;
+        const sortedItems = items.sort((a, b) => {
+            const aIsDir = a.startsWith('📁');
+            const bIsDir = b.startsWith('📁');
+            
+            if (aIsDir !== bIsDir) {
+                return aIsDir ? -1 : 1;
             }
-            return a.name.localeCompare(b.name);
+            
+            return a.localeCompare(b);
         });
 
-        if (items.length === 0) {
-            return 'Directory is empty (or contains only hidden/filtered files)';
+        const currentPath = path.relative(CODE_BASE_PATH, targetPath) || '.';
+        
+        if (sortedItems.length === 0) {
+            return `Directory: ${currentPath}\nEmpty directory (or contains only hidden/filtered files)`;
         }
 
-        // Format output
-        const output = items.map(item => {
-            const icon = item.type === 'directory' ? '📁' : '📄';
-            const sizeStr = item.size !== null ? ` (${formatBytes(item.size)})` : '';
-            return `${icon} ${item.name}${sizeStr} - ${item.modified}`;
-        }).join('\n');
-
-        return `Contents of ${path.relative(CODE_BASE_PATH, targetPath) || '.'}:\n\n${output}`;
+        const dirCount = sortedItems.filter(item => item.startsWith('📁')).length;
+        const fileCount = sortedItems.filter(item => item.startsWith('📄')).length;
+        
+        return `Directory: ${currentPath}\n${dirCount} directories, ${fileCount} files\n\n${sortedItems.join('\n')}`;
         
     } catch (error) {
         return `Error listing directory: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
 }, {
     name: "list_dir",
-    description: "List directory contents with file sizes and modification dates",
+    description: `List the contents of a directory showing files and subdirectories.
+    
+    Use this tool when you need to:
+    - Explore the project structure and organization
+    - See what files and folders exist in a specific directory
+    - Understand the layout of components, utilities, or other code organization
+    - Get an overview of a directory before deciding which files to read or modify
+    - Navigate the codebase to understand its architecture
+    
+    Shows both files and directories, filtered to exclude common build artifacts and hidden files.
+    This is essential for understanding project structure before making changes.`,
     schema: z.object({
-        path: z.string().describe("The path to the directory to list (optional, defaults to root)").optional(),
+        path: z.string().describe("The relative directory path to list (e.g., 'src/components'). Leave empty or use '.' for root directory").optional(),
     }),
 });
 
@@ -571,7 +640,7 @@ const runTerminalCmdTool = tool(async (input) => {
         const cmdLower = input.cmd.toLowerCase();
         
         if (dangerous.some(cmd => cmdLower.includes(cmd))) {
-            return `Error: Command blocked for security reasons: ${input.cmd}`;
+            return `Command blocked for security reasons: ${input.cmd}`;
         }
 
         const { stdout, stderr } = await execAsync(input.cmd, {
@@ -580,31 +649,42 @@ const runTerminalCmdTool = tool(async (input) => {
             timeout: 30000 // 30 second timeout
         });
 
-        let result = stdout.trim();
-        if (stderr) {
-            result += stderr ? `\nStderr: ${stderr}` : '';
+        let result = `Command: ${input.cmd}\n`;
+        if (stdout.trim()) {
+            result += `Output:\n${stdout.trim()}`;
+        }
+        if (stderr.trim()) {
+            result += `\n\nErrors:\n${stderr.trim()}`;
+        }
+        if (!stdout.trim() && !stderr.trim()) {
+            result += "Command executed successfully (no output)";
         }
 
-        return result || 'Command executed successfully (no output)';
+        return result;
     } catch (error) {
         return `Error running command: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
 }, {
     name: "run_terminal_cmd",
-    description: "Run a terminal command in the codebase directory (with security restrictions)",
+    description: `Execute terminal/shell commands in the codebase directory with security restrictions.
+    
+    Use this tool when you need to:
+    - Run build commands (npm run build, yarn build)
+    - Install dependencies (npm install, yarn add)
+    - Run tests (npm test, jest, etc.)
+    - Execute linting or formatting tools (eslint, prettier)
+    - Run development servers or scripts
+    - Check git status or run other version control commands
+    - Execute package.json scripts
+    
+    Security restrictions prevent dangerous operations like file deletion, system modifications, etc.
+    Useful for project setup, building, testing, and running development tools.
+    
+    Examples: "npm install", "npm run build", "git status", "eslint src/", "npm test"`,
     schema: z.object({
-        cmd: z.string().describe("The command to run"),
+        cmd: z.string().describe("The shell command to execute (e.g., 'npm install', 'git status', 'npm run build')"),
     }),
 });
-
-// Helper function to format file sizes
-function formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-}
 
 export const coderTools: StructuredTool[] = [
     searchCodebaseTool,

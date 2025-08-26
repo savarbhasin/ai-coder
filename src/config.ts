@@ -3,5 +3,5 @@ export const CODE_BASE_PATH = ".";
 export const EMBEDDING_MODEL = "text-embedding-3-small";
 export const MAX_CHARS = 4000;
 export const K = 5;
-export const MODEL = process.env.MODEL || "openai "|| "gemini-2.5.pro";
+export const MODEL = process.env.MODEL || "gemini-2.5-pro" ;
 export const HUMAN_APPROVAL_TOOLS = ["diff_edit_file", "run_terminal_cmd"];

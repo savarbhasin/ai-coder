@@ -5,9 +5,12 @@ import { HUMAN_APPROVAL_TOOLS } from "../config";
 import { getModel } from "./model";
 import { ToolMessage } from "@langchain/core/messages";
 import { coderTools, reviewerTools } from "./tools";
-import { CODER_SYSTEM_PROMPT, CREATE_PHASE_PROMPT, PLANNER_AGENT_PROMPT, REVIEWER_SYSTEM_PROMPT } from "./prompt";
 import { RunnableConfig } from "@langchain/core/runnables";
 import { DynamicStructuredTool, Tool } from "@langchain/core/tools";
+import { CODER_SYSTEM_PROMPT } from "./prompts/coder";
+import { REVIEWER_SYSTEM_PROMPT } from "./prompts/reviewer";
+import { PLANNER_AGENT_PROMPT } from "./prompts/planner";
+import { CREATE_PHASE_PROMPT } from "./prompts/creator";
 
 type RouteDestination = typeof END | "human_review_node" | "run_tool";
 
@@ -144,9 +147,8 @@ export const callLLM = async (
         throw new Error("agent type is required");
     }
 
-    const strippedMessages = state.messages
-        .filter((message) => !(message instanceof ToolMessage) || message.name === "diff_tool")
-        .slice(-20);
+    // TODO: after a turn ends, need to remove tool call results
+    const strippedMessages = state.messages.slice(-20)
     
     let systemPrompt: string;
     if (agentType === "coder") {
@@ -167,7 +169,7 @@ export const callLLM = async (
     ];
     
     const tools = agentType === 'coder' ? coderTools : reviewerTools;
-    const model = getModel().bindTools(tools);
+    const model = getModel().bindTools(tools, {parallel_tool_calls: false});
     const response = await model.invoke(messages);
     return { messages: [response] };
 };
