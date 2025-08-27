@@ -1,35 +1,83 @@
 import { CODE_BASE_PATH } from '../config';
 import agent from '../agent/workflow';
 import { approveToolExecution, rejectToolExecution } from '../utils';
-import { renderAgentUpdate, renderError } from './toolRender';
+import { renderAgentUpdate, renderError, renderToolCall } from './toolRender';
 import { renderToolApprovalPrompt, promptToolApproval } from './prompts';
 import { HumanResponse } from '@langchain/langgraph/prebuilt';
-import { AIMessage, HumanMessage } from '@langchain/core/messages';
+import { AIMessage, BaseMessage, HumanMessage, ToolMessage, AIMessageChunk } from '@langchain/core/messages';
 import { AgentType } from '../types';
+import { color, ANSI } from './ui';
+import { BinaryOperatorAggregate, Messages, UpdateType } from '@langchain/langgraph';
+
+let hasStartedStreaming = false;
 
 
-export async function processUserInput(userInput: string, conversationId: string, agentType: AgentType): Promise<void> {
+function renderMessagesChunk(messages: any): string {
+    const outputs: string[] = [];
+
+    if (Array.isArray(messages)) {
+        for (const msg of messages) {
+            if (msg instanceof AIMessageChunk){
+                const content = msg.content;
+                if (content && content.toString().trim()) {
+                    const coloredText = color(content.toString(), ANSI.green);
+                    if (!hasStartedStreaming) {
+                        const icon = color("+ ", ANSI.green + ANSI.bold);
+                        outputs.push(`${icon}${coloredText}`);
+                        hasStartedStreaming = true;
+                    } else {
+                        outputs.push(coloredText);
+                    }
+                }
+                if (msg.tool_calls && msg.tool_calls.length > 0) {
+                    for (const toolCall of msg.tool_calls) {
+                        const toolCallsDisplay = renderToolCall(toolCall);
+                        if (toolCallsDisplay.trim()) {
+                            outputs.push(toolCallsDisplay);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return outputs.filter(output => output && output.trim()).join('');
+}
+
+function renderUpdatesChunk(updates: Record<string, UpdateType<{ messages: BinaryOperatorAggregate<BaseMessage[], Messages>; }>>): string {
+    const outputs: string[] = [];
+    for (const [node, values] of Object.entries(updates)) {
+        const rendered = renderAgentUpdate(values);
+        if (rendered) {
+            outputs.push(rendered);
+        }
+    }
+    return outputs.filter(output => output && output.trim()).join('\n\n');
+}
+
+export async function processUserInputStreaming(userInput: string, conversationId: string, agentType: AgentType): Promise<void> {
     const inputs = { messages: [new HumanMessage(userInput)] };
+
+    hasStartedStreaming = false;
 
     let toSend = inputs;
 
-    
     while (true) {
         try {
-            const stream = await agent.stream(toSend, { 
-                configurable: { thread_id: conversationId, agent: agentType }, 
-                streamMode: "updates"
+            const stream = await agent.stream(toSend, {
+                configurable: { thread_id: conversationId, agent: agentType },
+                streamMode: ["updates", "messages"] as const
             });
 
-            //process streaming updates
-            for await (const chunk of stream) {
-                for (const [node, values] of Object.entries(chunk)) {
-                    const rendered = renderAgentUpdate(values);
-                    console.log(rendered);
+            for await (const [streamType, data] of stream) {
+                if (streamType === 'messages') {
+                    process.stdout.write(renderMessagesChunk(data));
+                } else if (streamType === 'updates') {
+                    console.log(`\n\n${renderUpdatesChunk(data)}`);
                 }
+                
             }
 
-            // check if human review is needed
             const state = await agent.getState({
                 configurable: { thread_id: conversationId }
             });
@@ -45,7 +93,7 @@ export async function processUserInput(userInput: string, conversationId: string
                     continue;
                 }
             }
-            
+
 
             break;
 
@@ -66,5 +114,4 @@ async function processApprovalResponse(response: HumanResponse): Promise<any> {
     }
 }
 
-
-
+export { processUserInputStreaming as processUserInput };

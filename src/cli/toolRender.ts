@@ -125,18 +125,18 @@ export function renderAgentUpdate(values: UpdateType<{ messages: BinaryOperatorA
         }
       }
       
-      // Handle AI message content
-      const content = Array.isArray(aiMessage.content) 
-        ? aiMessage.content.map(c => {
-            if (typeof c === 'string') return c;
-          }).join('\n')
-        : aiMessage.content;
+      // handle AI message content - already done by streaming
+      // const content = Array.isArray(aiMessage.content) 
+      //   ? aiMessage.content.map(c => {
+      //       if (typeof c === 'string') return c;
+      //     }).join('\n')
+      //   : aiMessage.content;
         
-      if (content && content.trim()) {
-        const icon = color("+ ", ANSI.green + ANSI.bold);
-        const coloredText = color(content, ANSI.green);
-        outputs.push(`${icon}${coloredText}`);
-      }
+      // if (content && content.trim()) {
+      //   const icon = color("+ ", ANSI.green + ANSI.bold);
+      //   const coloredText = color(content, ANSI.green);
+      //   outputs.push(`${icon}${coloredText}`);
+      // }
       
       // Handle usage metadata
       const usage = renderUsage(aiMessage);
