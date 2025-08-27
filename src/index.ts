@@ -28,13 +28,13 @@ async function main() {
         console.log(`${modelInfo}`);
         console.log(`${agentInfo}`);
         
-        await incrementalVectorStore.initialize();
+        // await incrementalVectorStore.initialize();
         
-        let vectorStore = incrementalVectorStore.getVectorStore();
+        // let vectorStore = incrementalVectorStore.getVectorStore();
         
-        if (!vectorStore) {
-            await incrementalVectorStore.rebuildIndex();
-        }
+        // if (!vectorStore) {
+        //     await incrementalVectorStore.rebuildIndex();
+        // }
         
         // watching is not working 
         // incrementalVectorStore.startWatching();

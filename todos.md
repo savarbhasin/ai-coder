@@ -1,4 +1,4 @@
-- [ ] add param to semantic search > 0.7
+- [x] add param to semantic search > 0.7
 
 - [ ] test reviewer, coder, creator, planner
 
@@ -10,4 +10,4 @@
 
 - [ ] check for better tree parsers
 
-- [ ] implement streaming
+- [x] implement streaming

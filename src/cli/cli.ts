@@ -6,7 +6,7 @@ import { renderToolApprovalPrompt, promptToolApproval } from './prompts';
 import { HumanResponse } from '@langchain/langgraph/prebuilt';
 import { AIMessage, BaseMessage, HumanMessage, ToolMessage, AIMessageChunk } from '@langchain/core/messages';
 import { AgentType } from '../types';
-import { color, ANSI } from './ui';
+import { color, ANSI, renderMarkdown } from './ui';
 import { BinaryOperatorAggregate, Messages, UpdateType } from '@langchain/langgraph';
 
 let hasStartedStreaming = false;
@@ -20,10 +20,12 @@ function renderMessagesChunk(messages: any): string {
             if (msg instanceof AIMessageChunk){
                 const content = msg.content;
                 if (content && content.toString().trim()) {
-                    const coloredText = color(content.toString(), ANSI.green);
+                    const renderedContent = renderMarkdown(content.toString());
+                    // const coloredText = color(renderedContent, ANSI.green);
+                    const coloredText = renderedContent;
                     if (!hasStartedStreaming) {
-                        const icon = color("+ ", ANSI.green + ANSI.bold);
-                        outputs.push(`${icon}${coloredText}`);
+                        // const icon = color("+ ", ANSI.green + ANSI.bold);
+                        outputs.push(`${coloredText}`);
                         hasStartedStreaming = true;
                     } else {
                         outputs.push(coloredText);

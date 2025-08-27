@@ -15,6 +15,7 @@ export interface ANSIColors {
   cyan: string;
   white: string;
   gray: string;
+  purple: string;
 }
 
 // Tool descriptions mapping

@@ -16,7 +16,8 @@ export const ANSI: ANSIColors = {
   magenta: "\x1b[35m",
   cyan: "\x1b[36m",
   white: "\x1b[37m",
-  gray: "\x1b[90m"
+  gray: "\x1b[90m",
+  purple: "\x1b[95m", // Bright magenta for better purple color
 };
 
 /**
@@ -24,6 +25,13 @@ export const ANSI: ANSIColors = {
  */
 export function color(text: string, code: string): string {
   return `${code}${text}${ANSI.reset}`;
+}
+
+/**
+ * Colors simple text with a default purple color
+ */
+export function colorText(text: string, textColor: string = ANSI.purple): string {
+  return color(text, textColor);
 }
 
 /**
@@ -154,7 +162,7 @@ export function formatQuestion(question: string): string {
   const top = `\n╭${"─".repeat(width - 2)}╮`;
   const mid = `│ ${" ".repeat(width - 4)} │`;
   const bottom = `╰${"─".repeat(width - 2)}╯`;
-  const questionLine = `│ > ${question}`;
+  const questionLine = `│ > ${colorText(question)}`;
 
   return [top, mid, questionLine, bottom].join('\n');
 }
@@ -303,3 +311,161 @@ export function wrapFileContent(content: string, width?: number): string {
 export function stripAnsi(str: string): string {
   return str.replace(/[\u001b\u009b][[()#;?]*.{0,2}(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
 }
+
+/**
+ * Renders markdown text with ANSI colors for terminal display
+ */
+export function renderMarkdown(markdown: string): string {
+  if (!markdown) return "";
+  
+  const lines = markdown.split('\n');
+  const rendered: string[] = [];
+  let inCodeBlock = false;
+  let codeBlockLanguage = '';
+  
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    if (!line && line !== '') continue;
+    
+    // Handle code blocks
+    const codeBlockMatch = line.match(/^```(\w+)?/);
+    if (codeBlockMatch) {
+      if (!inCodeBlock) {
+        inCodeBlock = true;
+        codeBlockLanguage = codeBlockMatch[1] || '';
+        const lang = codeBlockLanguage ? ` ${codeBlockLanguage}` : '';
+        rendered.push(color(`┌─ Code${lang} ─────`, ANSI.cyan + ANSI.dim));
+        continue;
+      } else {
+        inCodeBlock = false;
+        rendered.push(color(`└─────────────`, ANSI.cyan + ANSI.dim));
+        continue;
+      }
+    }
+    
+    // Inside code block - render with minimal formatting
+    if (inCodeBlock) {
+      rendered.push(color(`│ ${line}`, ANSI.gray));
+      continue;
+    }
+    
+    // Headers
+    const h1Match = line.match(/^# (.+)/);
+    if (h1Match) {
+      rendered.push(color(h1Match[1] || '', ANSI.bold + ANSI.blue));
+      rendered.push(color('═'.repeat(stripAnsi(h1Match[1] || '').length), ANSI.blue + ANSI.dim));
+      continue;
+    }
+    
+    const h2Match = line.match(/^## (.+)/);
+    if (h2Match) {
+      rendered.push(color(h2Match[1] || '', ANSI.bold + ANSI.cyan));
+      rendered.push(color('─'.repeat(stripAnsi(h2Match[1] || '').length), ANSI.cyan + ANSI.dim));
+      continue;
+    }
+    
+    const h3Match = line.match(/^### (.+)/);
+    if (h3Match) {
+      rendered.push(color(`▶ ${h3Match[1] || ''}`, ANSI.bold + ANSI.yellow));
+      continue;
+    }
+    
+    // Lists
+    const bulletMatch = line.match(/^(\s*)[-*+] (.+)/);
+    if (bulletMatch) {
+      const indent = bulletMatch[1];
+      const content = bulletMatch[2];
+      rendered.push(`${indent}${color('•', ANSI.green)} ${colorText(processInlineMarkdown(content || ''))}`);
+      continue;
+    }
+    
+    const numberedMatch = line.match(/^(\s*)(\d+)\. (.+)/);
+    if (numberedMatch) {
+      const indent = numberedMatch[1];
+      const number = numberedMatch[2];
+      const content = numberedMatch[3];
+      rendered.push(`${indent}${color(`${number}.`, ANSI.blue)} ${colorText(processInlineMarkdown(content || ''))}`);
+      continue;
+    }
+    
+    // Blockquotes
+    const quoteMatch = line.match(/^> (.+)/);
+    if (quoteMatch) {
+      rendered.push(color(`│ ${quoteMatch[1]}`, ANSI.yellow + ANSI.italic));
+      continue;
+    }
+    
+    // Inline code blocks (single line)
+    const inlineCodeMatch = line.match(/^```(.+)```$/);
+    if (inlineCodeMatch) {
+      rendered.push(color(`  ${inlineCodeMatch[1]}`, ANSI.gray));
+      continue;
+    }
+    
+    // Horizontal rules
+    if (line.match(/^[-*_]{3,}$/)) {
+      rendered.push(color('─'.repeat(50), ANSI.dim));
+      continue;
+    }
+    
+    // Empty lines
+    if (line.trim() === '') {
+      rendered.push('');
+      continue;
+    }
+    
+    // Regular paragraphs with inline formatting and default text coloring
+    const processedLine = processInlineMarkdown(line);
+    // Apply default text color to the whole line if it doesn't already have colors
+    if (!hasAnsiCodes(processedLine)) {
+      rendered.push(colorText(processedLine));
+    } else {
+      rendered.push(processedLine);
+    }
+  }
+  
+  return rendered.join('\n');
+}
+
+/**
+ * Processes inline markdown formatting (bold, italic, code, links)
+ */
+function processInlineMarkdown(text: string): string {
+  let result = text;
+  
+  // Inline code (backticks)
+  result = result.replace(/`([^`]+)`/g, (_, code) => 
+    color(code, ANSI.gray)
+  );
+  
+  // Bold (**text** or __text__)
+  result = result.replace(/(\*\*|__)(.*?)\1/g, (_, marker, content) =>
+    color(content, ANSI.bold + ANSI.magenta)
+  );
+  
+  // Italic (*text* or _text_)
+  result = result.replace(/(\*|_)(.*?)\1/g, (_, marker, content) =>
+    color(content, ANSI.italic + ANSI.blue)
+  );
+  
+  // Links [text](url)
+  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, url) =>
+    `${color(text, ANSI.blue + ANSI.underline)} ${color(`(${url})`, ANSI.dim)}`
+  );
+  
+  // Strikethrough ~~text~~
+  result = result.replace(/~~(.*?)~~/g, (_, content) =>
+    color(content, ANSI.dim)
+  );
+  
+  return result;
+}
+
+/**
+ * Check if a string contains ANSI color codes
+ */
+function hasAnsiCodes(str: string): boolean {
+  return /[\u001b\u009b][[()#;?]*.{0,2}(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/.test(str);
+}
+
+
