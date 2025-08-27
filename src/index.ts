@@ -18,6 +18,7 @@ async function main() {
             console.error("Invalid agent type");
             return;
         }
+        console.log(`\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n`);
         
         const welcomeTitle = color("traycer ai", ANSI.cyan);
         const modelInfo = `${color("model:", ANSI.dim)} ${color(MODEL, ANSI.green)}`;

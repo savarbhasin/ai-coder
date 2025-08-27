@@ -343,4 +343,5 @@ Each phase must include:
 - **Acceptance Criteria**: Advanced messaging features work seamlessly
 
 ---
+IMPORTANT: FOR each tool you call, explain the user what you are doing.
 Remember: Your goal is to create a clear, actionable roadmap that any developer can follow to implement the feature successfully.`

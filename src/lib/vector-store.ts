@@ -1,5 +1,3 @@
-import chokidar from 'chokidar';
-import { FSWatcher } from 'chokidar';
 import { CodeSplitter } from "llamaindex";
 import Parser from "tree-sitter";
 import { PineconeStore } from "@langchain/pinecone";
@@ -331,7 +329,6 @@ export class IncrementalVectorStore {
             await this.pineconeIndex.deleteAll();
         } catch (error) {
             console.error("error clearing pinecone index");
-            return;
         }
 
         const allDocuments: Document[] = [];
@@ -375,7 +372,6 @@ export class IncrementalVectorStore {
             this.vectorStore = null;
         }
 
-        // Pinecone doesn't need explicit saving
         await this.saveFileIndex();
 
         console.log("index rebuilt successfully");

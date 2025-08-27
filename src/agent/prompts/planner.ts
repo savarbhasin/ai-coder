@@ -28,7 +28,7 @@ Your task is to output a **file-by-file plan** in a structured format.
 
 # Example Output
 
-### \`lib/auth/auth0-config.ts\`
+### lib/auth/auth0-config.ts
 Create a basic Auth0 configuration file that initializes the Auth0 SDK without interfering with the existing authentication system. This file will:  
 
 1. Import the necessary Auth0 configuration utilities from \`@auth0/nextjs-auth0\`  

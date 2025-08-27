@@ -148,7 +148,7 @@ export const callLLM = async (
     }
 
     // TODO: after a turn ends, need to remove tool call results
-    const strippedMessages = state.messages.slice(-20)
+    
     
     let systemPrompt: string;
     if (agentType === "coder") {
@@ -165,7 +165,7 @@ export const callLLM = async (
     
     const messages = [
         new SystemMessage(systemPrompt),
-        ...strippedMessages
+        ...state.messages
     ];
     
     const tools = agentType === 'coder' ? coderTools : reviewerTools;

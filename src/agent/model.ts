@@ -5,7 +5,7 @@ import { MODEL } from "../config";
 export function getModel() {
     if (MODEL === "openai") {
         return new ChatOpenAI({
-            model: "o3",
+            model: "o4-mini",
             apiKey: process.env.OPENAI_API_KEY!
         })
     } else {
