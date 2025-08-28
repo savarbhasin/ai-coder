@@ -78,9 +78,7 @@ export async function processUserInputStreaming(userInput: string, conversationI
                 } else if (streamType === 'updates') {
                     console.log(`\n\n${renderUpdatesChunk(data)}`);
                 }
-                
             }
-
             const state = await agent.getState({
                 configurable: { thread_id: conversationId, agent: agentType }
             });
