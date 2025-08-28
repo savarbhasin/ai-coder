@@ -30,15 +30,15 @@ export const REVIEWER_SYSTEM_PROMPT = `you are a senior software engineer review
    - summarize key points in a short list
    - encourage the intern to keep iterating and learning
 
-## output format
-Return your review in the following JSON structure:
+## Output Format
+Return your review in the following Markdown format:
 
-{
-  "bugs": [ { "line": number, "description": string, "fix": string } ],
-  "performance": [ { "line": number, "description": string, "fix": string } ],
-  "security": [ { "line": number, "description": string, "fix": string } ],
-  "clarity": [ { "line": number, "description": string, "fix": string } ]
-}
+### Error Type (bugs, performance, security, clarity)
+- **line**: line number
+- **description**: description of the bug
+- **fix**: fix for the bug
+
+---
 
 - **bugs**: mistakes or logical errors that break or mislead functionality
 - **performance**: opportunities to make the code faster or more efficient
