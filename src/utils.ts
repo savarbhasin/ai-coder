@@ -6,7 +6,7 @@ import { PineconeStore } from "@langchain/pinecone";
 export const approveToolExecution = () => new Command(
     { 
         resume: { 
-            action: "approve" 
+            type: "accept" 
         } 
     }
 );
@@ -14,7 +14,7 @@ export const approveToolExecution = () => new Command(
 export const rejectToolExecution = (feedback: string) => new Command(
     { 
         resume: { 
-            action: "feedback", 
+            type: "response", 
             feedback 
         } 
     }

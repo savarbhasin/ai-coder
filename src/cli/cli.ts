@@ -31,14 +31,14 @@ function renderMessagesChunk(messages: any): string {
                         outputs.push(coloredText);
                     }
                 }
-                if (msg.tool_calls && msg.tool_calls.length > 0) {
-                    for (const toolCall of msg.tool_calls) {
-                        const toolCallsDisplay = renderToolCall(toolCall);
-                        if (toolCallsDisplay.trim()) {
-                            outputs.push(toolCallsDisplay);
-                        }
-                    }
-                }
+                // if (msg.tool_calls && msg.tool_calls.length > 0) {
+                //     for (const toolCall of msg.tool_calls) {
+                //         const toolCallsDisplay = renderToolCall(toolCall);
+                //         if (toolCallsDisplay.trim()) {
+                //             outputs.push(toolCallsDisplay);
+                //         }
+                //     }
+                // }
             }
         }
     }
@@ -68,7 +68,8 @@ export async function processUserInputStreaming(userInput: string, conversationI
         try {
             const stream = await agent.stream(toSend, {
                 configurable: { thread_id: conversationId, agent: agentType },
-                streamMode: ["updates", "messages"] as const
+                streamMode: ["updates", "messages"] as const,
+                recursionLimit: 50
             });
 
             for await (const [streamType, data] of stream) {
@@ -81,7 +82,7 @@ export async function processUserInputStreaming(userInput: string, conversationI
             }
 
             const state = await agent.getState({
-                configurable: { thread_id: conversationId }
+                configurable: { thread_id: conversationId, agent: agentType }
             });
 
             if (state.next && state.next.includes('human_review_node')) {
@@ -95,7 +96,6 @@ export async function processUserInputStreaming(userInput: string, conversationI
                     continue;
                 }
             }
-
 
             break;
 
