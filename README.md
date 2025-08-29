@@ -14,8 +14,11 @@
 - uses langgraph for agent orchestration
 - setup langsmith for observability
 - in memory conversation saver
-- cli based access to the agents
+
+## demo
+- cli based access to the project
+- for demo purposes, a quick frontend was vibecoded — you can check out the demo video here: [link]()  
 
 ## how to run
-- `npm ci`
+- `npm install --legacy-peer-deps`
 - `npm run dev`
