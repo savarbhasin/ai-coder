@@ -56,9 +56,11 @@ After thoroughly understanding the existing codebase:
 
 ---
 
-## Example:
+## Example output:
 
-### lib/auth/auth0-config.ts (NEW)
+### Name: lib/auth/auth0-config.ts 
+Status: (NEW)
+Todos:
 Create a basic Auth0 configuration file that follows the existing configuration pattern found in lib/config/database.ts. After examining the current auth system in lib/auth/session.ts, this file will:  
 
 1. Import the necessary Auth0 configuration utilities from @auth0/nextjs-auth0 (confirmed available in package.json)
@@ -66,11 +68,14 @@ Create a basic Auth0 configuration file that follows the existing configuration 
 3. Include TypeScript types that extend the existing User interface from lib/types/auth.ts
 4. Add helper functions that complement existing validateSession function in lib/auth/session.ts
 
-**Integration Constraints**: Must not override the existing getSession function in lib/auth/session.ts. The AUTH0_SECRET environment variable should follow the same naming convention as DATABASE_URL found in the existing config.
+Constraints: Must not override the existing getSession function in lib/auth/session.ts. The AUTH0_SECRET environment variable should follow the same naming convention as DATABASE_URL found in the existing config.
 
-**Relationships**: This file will be imported by the future Auth0 middleware and should use the existing logger utility from lib/utils/logger.ts.
+Relationships: This file will be imported by the future Auth0 middleware and should use the existing logger utility from lib/utils/logger.ts.
 
-### components/auth/LoginButton.tsx (MODIFIED)
+### 
+Name: components/auth/LoginButton.tsx 
+Status: MODIFIED
+TODOS:
 Modify the existing login button component to support Auth0 integration while maintaining backward compatibility with the current session-based auth system found in this file.
 
 1. Add new prop authProvider: 'session' | 'auth0' to the existing LoginButtonProps interface
@@ -78,22 +83,21 @@ Modify the existing login button component to support Auth0 integration while ma
 3. Maintain the existing session-based login flow as the default behavior
 4. Import and utilize the new Auth0 configuration from the file created above
 
-**Integration Constraints**: Must preserve all existing functionality for current session-based users. The existing onLoginSuccess callback must continue to work unchanged.
+Constraints: Must preserve all existing functionality for current session-based users. The existing onLoginSuccess callback must continue to work unchanged.
 
-**Relationships**: Will import from the new lib/auth/auth0-config.ts file and continue to use existing useAuth hook from hooks/useAuth.ts.
+Relationships: Will import from the new lib/auth/auth0-config.ts file and continue to use existing useAuth hook from hooks/useAuth.ts.
 
 ---
 
 # Final Instructions
 
 **IMPORTANT**: Always use the available tools to examine the codebase before creating your plan. Never make assumptions about file contents, existing patterns, or available utilities. For each tool you call, explain to the user what you're doing in 1-2 sentences.
+Do not output the entire file code — only partial snippets if they clarify specific integration points with existing code.
+`
 
-For each feature phase, output the plan as a **list of files** after thorough codebase analysis, where each file is described in this structured format:  
 
+const removed = `
 - **File Path (Heading) with NEW/MODIFIED status**  
 - **Purpose Description (referencing existing code patterns)**  
 - **Numbered Breakdown of tasks (with specific integration details)**  
-- **Integration Constraints & Relationships (based on actual codebase examination)**  
-
-Do not output the entire file code — only partial snippets if they clarify specific integration points with existing code.
-`
+- **Integration Constraints & Relationships (based on actual codebase examination)**  `

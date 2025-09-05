@@ -576,7 +576,7 @@ const listDirTool = tool(async (input) => {
             .filter(entry => {
                 // Filter out hidden files and common build/cache directories
                 if (entry.name.startsWith('.')) return false;
-                if (['node_modules', 'dist', 'build', 'coverage', '.next'].includes(entry.name)) return false;
+                if (['node_modules', 'dist', 'build', 'coverage', '.next', 'server'].includes(entry.name)) return false;
                 return true;
             })
             .map(async entry => {
@@ -686,6 +686,23 @@ const runTerminalCmdTool = tool(async (input) => {
     }),
 });
 
+const isDone = tool(async (input) => {
+    return "done";
+}, {
+    name: "is_done",
+    description: "If you believe you are done with the task. use this tool, no need to further give any answer.",
+    schema: z.object({
+        files: z.array(z.object({
+            fileName: z.string().describe("The name of the file"),
+            status: z.enum(["new", "modified"]).describe("Whether this is a new file or modified existing file"),
+            todos: z.array(z.string()).describe("List of bullet points describing what needs to be done in this file"),
+            constraints: z.string().describe("Any constraints or limitations for this file"),
+            relationships: z.string().describe("How this file relates to other files or components"),
+        })).describe("List of files and their completion status"),
+    }),
+});
+
+
 export const coderTools: StructuredTool[] = [
     searchCodebaseTool,
     grepTool,
@@ -706,5 +723,5 @@ export const reviewerTools = [
     runTerminalCmdTool,
 ];
 
-export const coderToolNode = new ToolNode(coderTools);
-export const reviewerToolNode = new ToolNode(reviewerTools);
+
+

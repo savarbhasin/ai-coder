@@ -150,7 +150,6 @@ export const callLLM = async (
 
     // TODO: after a turn ends, need to remove tool call results
     
-    
     let systemPrompt: string;
     if (agentType === "coder") {
         systemPrompt = CODER_SYSTEM_PROMPT;

@@ -13,7 +13,7 @@ export function getModel() {
         };
 
         return new ChatOpenAI({
-            model: process.env.OPENAI_MODEL || "gpt-4.1",
+            model: process.env.OPENAI_MODEL || "o4-mini",
             apiKey: process.env.OPENAI_API_KEY!,
             // temperature: 0.2,
             // reasoning: reasoning,
