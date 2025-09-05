@@ -24,7 +24,7 @@
 
 ## demo
 - cli based access to the project
-- for demo purposes, a quick frontend was vibecoded — you can check out the demo video here: [link]()  
+- for demo purposes, a quick frontend was vibecoded — you can check out the demo video here: [link](https://www.youtube.com/watch?v=QEE-AgO1tsM)  
 
 
 
